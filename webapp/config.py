@@ -16,6 +16,8 @@ DATABASE_URL = os.environ.get(
 SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 
 # Password hash for authentication
-# Set RUNNING_LOG_PASSWORD environment variable, or use default for dev
-_password = os.environ.get('RUNNING_LOG_PASSWORD', 'run')
+# REQUIRED: Set RUNNING_LOG_PASSWORD environment variable
+_password = os.environ.get('RUNNING_LOG_PASSWORD')
+if not _password:
+    raise ValueError('RUNNING_LOG_PASSWORD environment variable must be set')
 PASSWORD_HASH = generate_password_hash(_password)
