@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block header_title %}Dashboard{% endblock %}
+{% block header_subtitle %}Your running history{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<!-- Stats Row -->
+<div class="bg-white rounded-2xl shadow-md p-5 mb-4">
+    <div class="flex justify-around text-center">
+        <div>
+            <div class="text-2xl font-bold text-emerald-600">{{ total_runs }}</div>
+            <div class="text-xs uppercase tracking-wide text-gray-500">Total Runs</div>
+        </div>
+        <div class="border-l border-r px-6">
+            <div class="text-2xl font-bold text-emerald-600">{{ total_distance|format_distance }}</div>
+            <div class="text-xs uppercase tracking-wide text-gray-500">Total km</div>
+        </div>
+        <div>
+            <div class="text-2xl font-bold text-gray-700">{{ avg_distance|format_distance }}</div>
+            <div class="text-xs uppercase tracking-wide text-gray-500">Avg km/run</div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart Card -->
+<div class="bg-white rounded-2xl shadow-md p-5 mb-4">
+    <h2 class="text-xs uppercase tracking-wide text-gray-500 font-medium mb-3">Actual vs Target</h2>
+    <div class="h-48">
+        <canvas id="progressChart"></canvas>
+    </div>
+</div>
+
+<!-- Weekly Summaries -->
+{% if weekly_summaries %}
+<div class="bg-white rounded-2xl shadow-md p-5 mb-4">
+    <h2 class="text-xs uppercase tracking-wide text-gray-500 font-medium mb-3">Weekly Summaries</h2>
+    <ul class="divide-y divide-gray-100">
+        {% for week in weekly_summaries %}
+        <li class="py-3 flex justify-between items-center">
+            <div>
+                <div class="font-medium text-gray-900">{{ week.week_start.strftime('%b %d') }} - {{ week.week_end.strftime('%b %d') }}</div>
+                <div class="text-xs text-gray-500">Week {{ week.week_start.isocalendar()[1] }}</div>
+            </div>
+            <div class="text-right">
+                <div class="flex items-center gap-2">
+                    <span class="text-lg font-semibold text-emerald-600">{{ week.actual|format_distance }}</span>
+                    <span class="text-gray-400">/</span>
+                    <span class="text-gray-500">{{ week.target|format_distance }} km</span>
+                </div>
+                {% if week.diff is not none %}
+                    {% if week.diff >= 0 %}
+                        <span class="text-xs text-emerald-600">+{{ week.diff|format_distance }} km</span>
+                    {% else %}
+                        <span class="text-xs text-red-500">{{ week.diff|format_distance }} km</span>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<!-- All Runs List -->
+<div class="bg-white rounded-2xl shadow-md overflow-hidden">
+    <h2 class="text-xs uppercase tracking-wide text-gray-500 font-medium p-5 pb-0">All Runs</h2>
+
+    {% if runs %}
+    <ul class="divide-y divide-gray-100">
+        {% for run in runs %}
+        <li class="p-4 flex justify-between items-center">
+            <div>
+                <div class="font-medium text-gray-900">{{ run.date|format_date }}</div>
+                {% if run.target %}
+                <div class="text-xs text-gray-500">Target: {{ run.target|format_distance }} km</div>
+                {% endif %}
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-lg font-semibold text-emerald-600">{{ run.distance|format_distance }} km</span>
+                {% if run.diff is not none %}
+                    {% if run.diff >= 0 %}
+                        <span class="text-xs text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded">+{{ run.diff|format_distance }}</span>
+                    {% else %}
+                        <span class="text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded">{{ run.diff|format_distance }}</span>
+                    {% endif %}
+                {% endif %}
+                {% if is_authenticated %}
+                <a href="{{ url_for('runs.edit_run', run_id=run.id) }}" class="text-gray-400 hover:text-emerald-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                </a>
+                {% endif %}
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <div class="text-center py-8 text-gray-500 px-5">
+        <p>No runs logged yet.</p>
+        {% if is_authenticated %}
+        <a href="{{ url_for('runs.log') }}" class="text-emerald-600 hover:text-emerald-700 font-medium">Log your first run</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+{% if not is_authenticated %}
+<div class="text-center mt-6">
+    <a href="{{ url_for('auth.login') }}" class="text-emerald-600 hover:text-emerald-700 font-medium text-sm">
+        Owner login &rarr;
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Fetch chart data and render
+fetch('{{ url_for("dashboard.chart_data") }}')
+    .then(response => response.json())
+    .then(data => {
+        const ctx = document.getElementById('progressChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.labels,
+                datasets: [
+                    {
+                        label: 'Actual',
+                        data: data.actual,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 2
+                    },
+                    {
+                        label: 'Target',
+                        data: data.target,
+                        borderColor: '#9ca3af',
+                        borderDash: [5, 5],
+                        fill: false,
+                        tension: 0.3,
+                        pointRadius: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            padding: 15
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        display: true,
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            maxTicksLimit: 6
+                        }
+                    },
+                    y: {
+                        display: true,
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0,0,0,0.05)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value + ' km';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

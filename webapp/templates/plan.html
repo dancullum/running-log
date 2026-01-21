@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block header_title %}Training Plan{% endblock %}
+{% block header_subtitle %}Your scheduled runs to race day{% endblock %}
+
+{% block content %}
+<!-- Progress Overview Card -->
+<div class="bg-white rounded-2xl shadow-md p-5 mb-4">
+    <h2 class="text-xs uppercase tracking-wide text-gray-500 font-medium mb-3">Progress Overview</h2>
+    <div class="flex justify-around text-center">
+        <div>
+            <div class="text-2xl font-bold text-emerald-600">{{ total_run|format_distance }}</div>
+            <div class="text-xs uppercase tracking-wide text-gray-500">km Run</div>
+        </div>
+        <div class="border-l border-r px-6">
+            <div class="text-2xl font-bold text-gray-700">{{ total_planned|format_distance }}</div>
+            <div class="text-xs uppercase tracking-wide text-gray-500">km Planned</div>
+        </div>
+        <div>
+            <div class="text-2xl font-bold text-gray-700">{{ days_remaining }}</div>
+            <div class="text-xs uppercase tracking-wide text-gray-500">Days Left</div>
+        </div>
+    </div>
+    {% if race_day %}
+    <div class="text-center text-sm text-gray-500 mt-3 pt-3 border-t">
+        Race day: {{ race_day.strftime('%B %d, %Y') }}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Schedule List -->
+<div class="bg-white rounded-2xl shadow-md overflow-hidden">
+    <ul class="divide-y divide-gray-100">
+        {% for day in schedule %}
+        <li class="p-4 {% if day.is_today %}bg-gradient-to-r from-amber-50 to-yellow-50{% endif %}">
+            <div class="flex justify-between items-center">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-medium text-gray-900">{{ day.date.strftime('%a, %b %d') }}</span>
+                        {% if day.is_today %}
+                        <span class="bg-amber-400 text-amber-900 text-xs px-2 py-0.5 rounded-full font-semibold uppercase">Today</span>
+                        {% elif day.is_past %}
+                        <span class="bg-gray-200 text-gray-600 text-xs px-2 py-0.5 rounded-full font-semibold uppercase">Past</span>
+                        {% endif %}
+                    </div>
+                    {% if day.target == 0 %}
+                    <div class="text-sm text-gray-500 italic">Rest day</div>
+                    {% else %}
+                    <div class="text-sm text-gray-500">Target: {{ day.target|format_distance }} km</div>
+                    {% endif %}
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="text-right">
+                        {% if day.logged %}
+                        <div class="text-lg font-semibold text-emerald-600">{{ day.logged|format_distance }} km</div>
+                        <div class="text-xs text-emerald-500">logged</div>
+                        {% elif day.is_today and day.target > 0 %}
+                        <a href="{{ url_for('runs.log') }}"
+                           class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition">
+                            Log
+                        </a>
+                        {% elif day.target > 0 %}
+                        <div class="text-lg font-semibold text-gray-400">{{ day.target|format_distance }} km</div>
+                        <div class="text-xs text-gray-400">planned</div>
+                        {% else %}
+                        <div class="text-gray-400 text-sm">Rest</div>
+                        {% endif %}
+                    </div>
+                    {% if not day.is_past %}
+                    <a href="{{ url_for('main.edit_plan', plan_id=day.id) }}" class="text-gray-400 hover:text-emerald-600 p-1">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+{% if not schedule %}
+<div class="text-center py-12 text-gray-500">
+    <p>No training plan loaded.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block header_title %}Edit Run{% endblock %}
+{% block header_subtitle %}{{ run.date|format_date }}{% endblock %}
+
+{% block content %}
+<form method="POST" class="space-y-4">
+    <!-- Current Run Info -->
+    <div class="bg-white rounded-2xl shadow-md p-5">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <h2 class="text-xs uppercase tracking-wide text-gray-500 font-medium">Date</h2>
+                <div class="text-lg font-medium">{{ run.date.strftime('%A, %B %d, %Y') }}</div>
+            </div>
+            {% if target %}
+            <div class="text-right">
+                <h2 class="text-xs uppercase tracking-wide text-gray-500 font-medium">Target</h2>
+                <div class="text-lg font-semibold text-amber-600">{{ target|format_distance }} km</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Distance Input -->
+        <label class="text-xs uppercase tracking-wide text-gray-500 font-medium block mb-3">Distance (km)</label>
+        <input type="number" name="distance" step="0.1" min="0" max="100" required
+               value="{{ run.distance }}"
+               class="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-2xl text-center font-semibold focus:border-emerald-500 focus:outline-none">
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="space-y-3">
+        <button type="submit" name="action" value="save"
+                class="w-full py-4 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white rounded-xl text-lg font-semibold shadow-lg transition">
+            Save Changes
+        </button>
+
+        <button type="submit" name="action" value="delete"
+                onclick="return confirm('Are you sure you want to delete this run?')"
+                class="w-full py-4 bg-red-500 hover:bg-red-600 text-white rounded-xl text-lg font-semibold transition">
+            Delete Run
+        </button>
+
+        <a href="{{ url_for('dashboard.dashboard') }}"
+           class="block w-full py-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl text-lg font-semibold text-center transition">
+            Cancel
+        </a>
+    </div>
+</form>
+{% endblock %}

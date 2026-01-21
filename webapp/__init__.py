@@ -1,0 +1,1 @@
+"""Running Log Web Application."""

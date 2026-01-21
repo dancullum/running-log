@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Log Run - Running Log{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-title">Log a Run</div>
+
+    <form action="{{ url_for('log_submit') }}" method="POST">
+        <div class="form-group">
+            <label for="date">Date</label>
+            <select name="date" id="date">
+                {% for day in available_dates %}
+                <option value="{{ day.date.isoformat() }}" {% if day.date == today %}selected{% endif %}>
+                    {{ day.date|format_date }}
+                    {% if day.target and day.target > 0 %}
+                        (target: {{ day.target|format_distance }})
+                    {% elif day.target == 0 %}
+                        (rest day)
+                    {% endif %}
+                    {% if day.logged %}
+                        - {{ day.logged|format_distance }} logged
+                    {% endif %}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="distance">Distance (km)</label>
+            <input type="number"
+                   name="distance"
+                   id="distance"
+                   step="0.1"
+                   min="0.1"
+                   max="100"
+                   placeholder="{% if today_target and today_target > 0 %}{{ today_target }}{% else %}5.0{% endif %}"
+                   {% if today_run %}value="{{ today_run }}"{% endif %}
+                   required
+                   autofocus>
+        </div>
+
+        {% if today_target and today_target > 0 %}
+        <p style="color: #888; font-size: 0.9rem; margin-bottom: 1rem;">
+            Today's target: <strong>{{ today_target|format_distance }}</strong>
+        </p>
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary">Log Run</button>
+    </form>
+</div>
+
+<!-- Quick Entry Card -->
+<div class="card">
+    <div class="card-title">Quick Entry</div>
+    <p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">
+        Tap a preset distance to quickly log today's run:
+    </p>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+        {% for dist in [5, 6, 8, 10, 12, 15] %}
+        <form action="{{ url_for('log_submit') }}" method="POST" style="margin: 0;">
+            <input type="hidden" name="date" value="{{ today.isoformat() }}">
+            <input type="hidden" name="distance" value="{{ dist }}">
+            <button type="submit" class="btn btn-secondary" style="padding: 0.75rem;">
+                {{ dist }} km
+            </button>
+        </form>
+        {% endfor %}
+    </div>
+</div>
+
+{% if today_run %}
+<div class="card">
+    <p style="color: #888; text-align: center;">
+        You've already logged <strong>{{ today_run|format_distance }}</strong> today.
+        Submitting again will update that entry.
+    </p>
+</div>
+{% endif %}
+{% endblock %}

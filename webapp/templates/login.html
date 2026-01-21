@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block header_title %}Login{% endblock %}
+{% block header_subtitle %}Enter your password{% endblock %}
+
+{% block nav %}
+<!-- No navigation on login page -->
+{% endblock %}
+
+{% block content %}
+<div class="max-w-sm mx-auto">
+    <form method="POST" class="space-y-4">
+        <div class="bg-white rounded-2xl shadow-md p-6">
+            <label class="text-xs uppercase tracking-wide text-gray-500 font-medium block mb-3">Password</label>
+            <input type="password" name="password" required autofocus
+                   class="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-lg text-center focus:border-emerald-500 focus:outline-none"
+                   placeholder="Enter password">
+        </div>
+
+        <button type="submit"
+                class="w-full py-4 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white rounded-xl text-lg font-semibold shadow-lg transition">
+            Login
+        </button>
+    </form>
+
+    <div class="text-center mt-6">
+        <a href="{{ url_for('dashboard.dashboard') }}" class="text-gray-500 hover:text-emerald-600 text-sm">
+            &larr; Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

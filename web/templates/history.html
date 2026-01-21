@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}History - Running Log{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-title">All Runs ({{ total_runs }} total)</div>
+
+    {% if runs %}
+    <ul class="run-list">
+        {% for run in runs %}
+        <li class="run-item">
+            <div>
+                <span class="run-date">{{ run.date|format_date }}</span>
+                {% if run.target %}
+                    <span class="target-label">(target: {{ run.target|format_distance }})</span>
+                {% endif %}
+            </div>
+            <div>
+                <span class="run-distance">{{ run.distance|format_distance }}</span>
+                {% if run.diff is not none %}
+                    <span class="run-diff {% if run.diff >= 0 %}diff-positive{% else %}diff-negative{% endif %}">
+                        {% if run.diff >= 0 %}+{% endif %}{{ run.diff|round(1) }}
+                    </span>
+                {% endif %}
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state">
+        <p>No runs logged yet.</p>
+        <a href="{{ url_for('log_form') }}" class="btn btn-primary" style="margin-top: 1rem; display: inline-block; width: auto; padding: 0.75rem 1.5rem;">
+            Log Your First Run
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% if runs %}
+<div class="card">
+    <div class="card-title">Summary</div>
+    <table class="stats-table">
+        <tr>
+            <span class="stats-label">Total Distance</span>
+            <span class="stats-value">{{ runs|map(attribute='distance')|sum|round(1) }} km</span>
+        </tr>
+        <tr>
+            <span class="stats-label">Number of Runs</span>
+            <span class="stats-value">{{ runs|length }}</span>
+        </tr>
+        <tr>
+            <span class="stats-label">Average per Run</span>
+            <span class="stats-value">{{ (runs|map(attribute='distance')|sum / runs|length)|round(1) }} km</span>
+        </tr>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

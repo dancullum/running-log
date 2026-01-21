@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block header_title %}Edit Plan{% endblock %}
+{% block header_subtitle %}{{ plan_entry.date.strftime('%A, %B %d') }}{% endblock %}
+
+{% block content %}
+<form method="POST" class="space-y-4">
+    <!-- Current Plan Info -->
+    <div class="bg-white rounded-2xl shadow-md p-5">
+        <div class="mb-4">
+            <h2 class="text-xs uppercase tracking-wide text-gray-500 font-medium">Date</h2>
+            <div class="text-lg font-medium">{{ plan_entry.date.strftime('%A, %B %d, %Y') }}</div>
+        </div>
+
+        <!-- Target Distance Input -->
+        <label class="text-xs uppercase tracking-wide text-gray-500 font-medium block mb-3">Target Distance (km)</label>
+        <input type="number" name="target_distance" step="0.5" min="0" max="100" required
+               value="{{ plan_entry.target_distance }}"
+               class="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-2xl text-center font-semibold focus:border-emerald-500 focus:outline-none">
+
+        <p class="text-sm text-gray-500 mt-2 text-center">Set to 0 for a rest day</p>
+    </div>
+
+    <!-- Quick Set Buttons -->
+    <div class="bg-white rounded-2xl shadow-md p-5">
+        <label class="text-xs uppercase tracking-wide text-gray-500 font-medium block mb-3">Quick Set</label>
+        <div class="grid grid-cols-4 gap-2">
+            {% for km in [0, 3, 5, 6, 8, 10, 12, 15] %}
+            <button type="button" onclick="setTarget({{ km }})"
+                    class="py-2 px-3 {% if km == 0 %}bg-gray-200 text-gray-600{% else %}bg-gray-100 text-gray-700{% endif %} hover:bg-emerald-100 rounded-lg text-sm font-semibold hover:text-emerald-700 transition">
+                {% if km == 0 %}Rest{% else %}{{ km }}{% endif %}
+            </button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="space-y-3">
+        <button type="submit" name="action" value="save"
+                class="w-full py-4 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white rounded-xl text-lg font-semibold shadow-lg transition">
+            Save Changes
+        </button>
+
+        <button type="submit" name="action" value="delete"
+                onclick="return confirm('Delete this plan entry?')"
+                class="w-full py-4 bg-red-500 hover:bg-red-600 text-white rounded-xl text-lg font-semibold transition">
+            Delete Entry
+        </button>
+
+        <a href="{{ url_for('main.plan') }}"
+           class="block w-full py-4 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl text-lg font-semibold text-center transition">
+            Cancel
+        </a>
+    </div>
+</form>
+
+<script>
+function setTarget(km) {
+    document.querySelector('input[name="target_distance"]').value = km;
+}
+</script>
+{% endblock %}

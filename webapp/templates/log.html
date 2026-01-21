@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block header_title %}Log a Run{% endblock %}
+{% block header_subtitle %}Record your running distance{% endblock %}
+
+{% block content %}
+<form method="POST" class="space-y-4">
+    <!-- Date Selection -->
+    <div class="bg-white rounded-2xl shadow-md p-5">
+        <label class="text-xs uppercase tracking-wide text-gray-500 font-medium block mb-3">Date</label>
+        <select name="date" id="date-select"
+                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-lg focus:border-emerald-500 focus:outline-none">
+            {% for d in available_dates %}
+            <option value="{{ d.date.isoformat() }}" {% if d.date == today %}selected{% endif %}>
+                {{ d.date|format_date }}
+                {% if d.logged %} (logged: {{ d.logged|format_distance }} km){% endif %}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Today's Target -->
+    {% if today_target %}
+    <div class="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-2xl px-5 py-4">
+        <span class="text-xs uppercase tracking-wide text-amber-700 font-medium">Today's target:</span>
+        <span class="text-xl font-bold text-amber-600 ml-2">{{ today_target|format_distance }} km</span>
+    </div>
+    {% endif %}
+
+    <!-- Distance Input -->
+    <div class="bg-white rounded-2xl shadow-md p-5">
+        <label class="text-xs uppercase tracking-wide text-gray-500 font-medium block mb-3">Distance (km)</label>
+        <input type="number" name="distance" step="0.1" min="0" max="100" required
+               class="w-full px-4 py-4 border-2 border-gray-200 rounded-xl text-2xl text-center font-semibold focus:border-emerald-500 focus:outline-none"
+               placeholder="0.0">
+    </div>
+
+    <!-- Quick Entry Buttons -->
+    <div class="bg-white rounded-2xl shadow-md p-5">
+        <label class="text-xs uppercase tracking-wide text-gray-500 font-medium block mb-3">Quick Entry</label>
+        <div class="grid grid-cols-3 gap-3">
+            {% for km in [3, 5, 6, 8, 10, 12] %}
+            <button type="button" onclick="setDistance({{ km }})"
+                    class="py-3 px-4 bg-gray-100 hover:bg-emerald-100 rounded-xl text-lg font-semibold text-gray-700 hover:text-emerald-700 transition">
+                {{ km }} km
+            </button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit"
+            class="w-full py-4 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white rounded-xl text-lg font-semibold shadow-lg transition">
+        Log Run
+    </button>
+</form>
+
+<script>
+function setDistance(km) {
+    document.querySelector('input[name="distance"]').value = km;
+}
+</script>
+{% endblock %}
