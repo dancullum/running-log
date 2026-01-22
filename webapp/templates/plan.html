@@ -31,26 +31,14 @@
 <!-- This Week Card -->
 {% if this_week %}
 <div class="bg-white rounded-2xl shadow-md p-5 mb-4">
-    <div class="flex justify-between items-center mb-3">
-        <h2 class="text-xs uppercase tracking-wide text-gray-500 font-medium">This Week</h2>
-        <span class="text-xs text-gray-500">{{ monday.strftime('%b %d') }} - {{ sunday.strftime('%b %d') }}</span>
-    </div>
-
-    <!-- Week Progress -->
-    <div class="flex items-center gap-2 mb-4">
-        <div class="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
-            <div class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-full rounded-full transition-all duration-500"
-                 style="width: {{ [(week_logged_total / week_target_total * 100) if week_target_total > 0 else 0, 100]|min }}%"></div>
-        </div>
-        <span class="text-sm font-medium text-gray-600">{{ week_logged_total|format_distance }}/{{ week_target_total|format_distance }} km</span>
-    </div>
+    <h2 class="text-xs uppercase tracking-wide text-gray-500 font-medium mb-3">This Week</h2>
 
     <!-- Daily Breakdown -->
     <ul class="divide-y divide-gray-100">
         {% for day in this_week %}
         <li class="py-2 flex justify-between items-center {% if day.is_today %}bg-gradient-to-r from-amber-50 to-yellow-50 -mx-5 px-5{% endif %}">
             <div class="flex items-center gap-2">
-                <span class="text-sm font-medium text-gray-700 w-8">{{ day.date.strftime('%a') }}</span>
+                <span class="text-sm font-medium text-gray-700">{{ day.date.strftime('%a, %b %d') }}</span>
                 {% if day.is_today %}
                 <span class="bg-amber-400 text-amber-900 text-xs px-1.5 py-0.5 rounded font-semibold">Today</span>
                 {% endif %}
