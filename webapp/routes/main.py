@@ -67,11 +67,8 @@ def home():
     # Auto-sync from Strava if connected and not synced recently
     from ..services.strava import auto_sync_if_needed
     synced = auto_sync_if_needed(minutes=1)
-    if synced is not None:
-        if synced > 0:
-            flash(f'Synced {synced} new run{"s" if synced != 1 else ""} from Strava.', 'success')
-        else:
-            flash('Strava synced - no new runs.', 'info')
+    if synced and synced > 0:
+        flash(f'Synced {synced} new run{"s" if synced != 1 else ""} from Strava.', 'success')
 
     today = date.today()
 
