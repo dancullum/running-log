@@ -31,12 +31,31 @@ def login():
         password = request.form.get('password', '')
         if check_password_hash(PASSWORD_HASH, password):
             session['authenticated'] = True
+
+            # Auto-sync from Strava if connected
+            _auto_sync_strava()
+
             next_url = request.args.get('next')
             if next_url:
                 return redirect(next_url)
             return redirect(url_for('main.home'))
         flash('Incorrect password', 'error')
     return render_template('login.html')
+
+
+def _auto_sync_strava():
+    """Sync runs from Strava on login if connected."""
+    try:
+        from webapp.services import strava as strava_service
+        if strava_service.is_strava_connected():
+            result, error = strava_service.sync_from_strava(days=30)
+            if result:
+                synced, _ = result
+                if synced > 0:
+                    flash(f'Synced {synced} new runs from Strava.', 'success')
+    except Exception:
+        # Don't block login if sync fails
+        pass
 
 
 @auth_bp.route('/logout')

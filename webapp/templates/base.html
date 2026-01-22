@@ -43,8 +43,35 @@
 <body class="bg-gradient-to-b from-gray-100 to-white min-h-screen">
     <!-- Header -->
     <header class="bg-gradient-to-r from-emerald-600 to-emerald-500 text-white px-4 py-6">
-        <h1 class="text-xl font-semibold text-center">{% block header_title %}Running Log{% endblock %}</h1>
-        <p class="text-sm text-center text-emerald-100 mt-1">{% block header_subtitle %}{% endblock %}</p>
+        <div class="flex justify-between items-start max-w-lg mx-auto">
+            <div class="flex-1">
+                <h1 class="text-xl font-semibold">{% block header_title %}Running Log{% endblock %}</h1>
+                <p class="text-sm text-emerald-100 mt-1">{% block header_subtitle %}{% endblock %}</p>
+            </div>
+            {% block header_actions %}
+            {% if session.get('authenticated') %}
+            <div class="flex items-center gap-2">
+                {% if strava_connected %}
+                <form action="{{ url_for('strava.sync') }}" method="POST" class="inline">
+                    <button type="submit" class="bg-white/20 hover:bg-white/30 text-white text-xs px-2 py-1 rounded-lg flex items-center gap-1" title="Sync from Strava">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7.008 13.828h4.172"/>
+                        </svg>
+                        Sync
+                    </button>
+                </form>
+                {% else %}
+                <a href="{{ url_for('strava.connect') }}" class="bg-[#FC4C02] hover:bg-[#e04402] text-white text-xs px-2 py-1 rounded-lg flex items-center gap-1">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7.008 13.828h4.172"/>
+                    </svg>
+                    Connect Strava
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% endblock %}
+        </div>
     </header>
 
     <!-- Flash messages -->

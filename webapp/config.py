@@ -21,3 +21,12 @@ _password = os.environ.get('RUNNING_LOG_PASSWORD')
 if not _password:
     raise ValueError('RUNNING_LOG_PASSWORD environment variable must be set')
 PASSWORD_HASH = generate_password_hash(_password)
+
+# Strava API configuration
+# Get these from https://www.strava.com/settings/api
+STRAVA_CLIENT_ID = os.environ.get('STRAVA_CLIENT_ID')
+STRAVA_CLIENT_SECRET = os.environ.get('STRAVA_CLIENT_SECRET')
+STRAVA_REDIRECT_URI = os.environ.get(
+    'STRAVA_REDIRECT_URI',
+    'http://localhost:5001/strava/callback'
+)

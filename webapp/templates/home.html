@@ -66,9 +66,23 @@
         {% for run in recent_runs %}
         <li class="py-3 flex justify-between items-center">
             <div>
-                <div class="font-medium text-gray-900">{{ run.date|format_date }}</div>
+                <div class="font-medium text-gray-900 flex items-center gap-2">
+                    {{ run.date|format_date }}
+                    {% if run.source == 'strava' %}
+                    <svg class="w-4 h-4 text-[#FC4C02]" viewBox="0 0 24 24" fill="currentColor" title="From Strava">
+                        <path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7.008 13.828h4.172"/>
+                    </svg>
+                    {% endif %}
+                </div>
                 {% if run.target %}
                 <div class="text-xs text-gray-500">Target: {{ run.target|format_distance }} km</div>
+                {% endif %}
+                {% if run.duration_formatted or run.pace_formatted %}
+                <div class="text-xs text-gray-500">
+                    {% if run.duration_formatted %}{{ run.duration_formatted }}{% endif %}
+                    {% if run.duration_formatted and run.pace_formatted %} · {% endif %}
+                    {% if run.pace_formatted %}{{ run.pace_formatted }}/km{% endif %}
+                </div>
                 {% endif %}
             </div>
             <div class="flex items-center gap-3">

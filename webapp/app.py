@@ -24,11 +24,13 @@ def create_app():
     from .routes.main import main_bp
     from .routes.runs import runs_bp
     from .routes.dashboard import dashboard_bp
+    from .routes.strava import strava_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(runs_bp)
     app.register_blueprint(dashboard_bp)
+    app.register_blueprint(strava_bp)
 
     # Template filters
     @app.template_filter('format_date')
@@ -54,6 +56,12 @@ def create_app():
         if km == int(km):
             return f'{int(km):,}'
         return f'{km:,.1f}'
+
+    # Context processor to inject strava_connected into all templates
+    @app.context_processor
+    def inject_strava_status():
+        from .services.strava import is_strava_connected
+        return {'strava_connected': is_strava_connected()}
 
     # Create tables
     with app.app_context():
