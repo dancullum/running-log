@@ -66,7 +66,7 @@ def home():
     # Auto-sync from Strava if connected and not synced recently (only if logged in)
     if is_authenticated():
         from ..services.strava import auto_sync_if_needed
-        synced = auto_sync_if_needed(minutes=1)
+        synced = auto_sync_if_needed(minutes=5)
         if synced and synced > 0:
             flash(f'Synced {synced} new run{"s" if synced != 1 else ""} from Strava.', 'success')
 
