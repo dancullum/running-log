@@ -3,6 +3,7 @@
 import time
 from datetime import datetime, timedelta
 from decimal import Decimal
+from urllib.parse import urlencode
 
 import requests
 
@@ -22,8 +23,7 @@ def get_authorization_url():
         'response_type': 'code',
         'scope': 'activity:read_all',
     }
-    query = '&'.join(f'{k}={v}' for k, v in params.items())
-    return f'{STRAVA_AUTH_URL}?{query}'
+    return f'{STRAVA_AUTH_URL}?{urlencode(params)}'
 
 
 def exchange_code_for_token(code):
