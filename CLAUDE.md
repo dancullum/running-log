@@ -11,10 +11,14 @@ Live at: https://steeetown.pythonanywhere.com
 RUNNING_LOG_PASSWORD=yourpassword python -m webapp.app
 
 # Run tests
-pytest webapp/tests/
+RUNNING_LOG_PASSWORD=runninglog2026 pytest webapp/tests/
 
 # Run specific test file
 pytest webapp/tests/test_routes.py -v
+
+# Database migrations (after changing models)
+RUNNING_LOG_PASSWORD=test FLASK_APP=webapp.app flask db migrate -m "Description of change"
+RUNNING_LOG_PASSWORD=test FLASK_APP=webapp.app flask db upgrade
 ```
 
 ## Environment Variables
@@ -47,6 +51,7 @@ webapp/
 ├── templates/          # Jinja2 templates
 └── tests/              # Pytest tests
 
+migrations/             # Flask-Migrate database migrations
 wsgi.py                 # PythonAnywhere entry point
 instance/               # Local SQLite database
 ```
@@ -93,6 +98,33 @@ instance/               # Local SQLite database
 - Settings page to manage Strava connection
 - Periodic/scheduled sync (currently manual only)
 
+## Database Migrations
+
+Uses Flask-Migrate (Alembic) to track schema changes.
+
+**Workflow for schema changes:**
+1. Modify models in `webapp/models.py`
+2. Generate migration: `flask db migrate -m "Description"`
+3. Review the generated file in `migrations/versions/`
+4. Apply locally: `flask db upgrade`
+5. Commit migration file to git
+6. On PythonAnywhere after pull: `flask db upgrade`
+
+**Common commands:**
+- `flask db migrate` - Auto-generate migration from model changes
+- `flask db upgrade` - Apply pending migrations
+- `flask db downgrade` - Revert last migration
+- `flask db current` - Show current revision
+
 ## Deployment
 
-Hosted on PythonAnywhere. Uses PostgreSQL in production, SQLite locally.
+Hosted on PythonAnywhere. Uses SQLite in both local and production.
+
+**After pulling changes to PythonAnywhere:**
+```bash
+cd ~/running-log
+source venv/bin/activate
+pip install -r webapp/requirements.txt  # If dependencies changed
+RUNNING_LOG_PASSWORD=xxx FLASK_APP=webapp.app flask db upgrade  # If migrations exist
+```
+Then reload the web app.

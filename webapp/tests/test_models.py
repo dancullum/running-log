@@ -65,12 +65,12 @@ class TestRunModel:
 
             assert run.created_at is not None
 
-    def test_run_date_must_be_unique(self, app):
+    def test_multiple_runs_per_day_allowed(self, app):
         """
-        Test that you can't log two runs for the same date.
+        Test that multiple runs can be logged for the same date.
 
-        This is a constraint test - we EXPECT it to fail.
-        pytest.raises() catches the expected exception.
+        This supports Strava integration where multiple activities
+        can occur on the same day.
         """
         with app.app_context():
             # Create first run
@@ -78,16 +78,14 @@ class TestRunModel:
             db.session.add(run1)
             db.session.commit()
 
-            # Try to create second run for same date
+            # Create second run for same date - should succeed
             run2 = Run(date=date.today(), distance=8.0)
             db.session.add(run2)
+            db.session.commit()
 
-            # This should raise IntegrityError
-            with pytest.raises(IntegrityError):
-                db.session.commit()
-
-            # Clean up the failed transaction
-            db.session.rollback()
+            # Both runs should exist
+            runs_today = Run.query.filter_by(date=date.today()).all()
+            assert len(runs_today) == 2
 
     def test_run_distance_required(self, app):
         """

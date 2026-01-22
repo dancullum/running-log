@@ -2,9 +2,12 @@
 
 from datetime import date, timedelta
 from flask import Flask
+from flask_migrate import Migrate
 
 from .config import DATABASE_URL, SECRET_KEY
 from .models import db
+
+migrate = Migrate()
 
 
 def create_app():
@@ -18,6 +21,7 @@ def create_app():
 
     # Initialize extensions
     db.init_app(app)
+    migrate.init_app(app, db)
 
     # Register blueprints
     from .routes.auth import auth_bp

@@ -213,7 +213,7 @@ class TestPlanPage:
         response = authenticated_client.get('/plan')
 
         assert response.status_code == 200
-        assert b'Total Planned Distance' in response.data
+        assert b'km Planned' in response.data
 
     def test_plan_shows_today_highlighted(self, authenticated_client, sample_training_plan):
         """
