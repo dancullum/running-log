@@ -64,6 +64,12 @@ def get_recent_runs(limit=3):
 @login_required
 def home():
     """Home page - weekly progress and recent runs."""
+    # Auto-sync from Strava if connected and not synced recently
+    from ..services.strava import auto_sync_if_needed
+    synced = auto_sync_if_needed(minutes=5)
+    if synced and synced > 0:
+        flash(f'Synced {synced} new runs from Strava.', 'success')
+
     today = date.today()
 
     # Get today's target

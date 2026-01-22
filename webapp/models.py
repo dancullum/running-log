@@ -55,12 +55,20 @@ class StravaToken(db.Model):
     access_token = db.Column(db.String(255), nullable=False)
     refresh_token = db.Column(db.String(255), nullable=False)
     expires_at = db.Column(db.Integer, nullable=False)  # Unix timestamp
+    last_sync_at = db.Column(db.DateTime, nullable=True)  # Last successful sync
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def is_expired(self):
         """Check if the access token is expired."""
         return datetime.utcnow().timestamp() >= self.expires_at
+
+    def needs_sync(self, minutes=5):
+        """Check if sync is needed (no sync yet or last sync > N minutes ago)."""
+        if self.last_sync_at is None:
+            return True
+        elapsed = (datetime.utcnow() - self.last_sync_at).total_seconds() / 60
+        return elapsed >= minutes
 
     def __repr__(self):
         return f'<StravaToken athlete_id={self.athlete_id}>'

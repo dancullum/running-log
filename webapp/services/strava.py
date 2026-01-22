@@ -160,9 +160,29 @@ def sync_from_strava(days=30):
     try:
         activities = fetch_recent_activities(token, days=days)
         synced, skipped = sync_activities_to_db(activities)
+
+        # Update last sync time
+        token.last_sync_at = datetime.utcnow()
+        db.session.commit()
+
         return (synced, skipped), None
     except requests.RequestException as e:
         return None, f'Strava API error: {str(e)}'
+
+
+def auto_sync_if_needed(minutes=5):
+    """Auto-sync from Strava if enough time has passed since last sync."""
+    token = StravaToken.query.first()
+    if token is None:
+        return None  # Not connected
+
+    if not token.needs_sync(minutes=minutes):
+        return None  # Recently synced, skip
+
+    result, error = sync_from_strava()
+    if result:
+        return result[0]  # Return number of new runs synced
+    return None
 
 
 def is_strava_connected():
