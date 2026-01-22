@@ -65,6 +65,34 @@ instance/               # Local SQLite database
 - Context processor injects `strava_connected` into all templates
 - Password authentication (single user, no registration)
 
+## Strava Integration
+
+### What's Implemented
+- **OAuth flow**: Connect/disconnect via `/strava/connect` and `/strava/disconnect`
+- **Token management**: Stores tokens in `StravaToken` model, auto-refreshes expired tokens
+- **Activity sync**: Fetches runs from Strava API, imports to database with duplicate detection
+- **Manual sync**: Button in header triggers `/strava/sync` (syncs last 30 days)
+- **UI indicators**: Strava icon on synced runs, connect/sync buttons in header
+
+### Routes (`webapp/routes/strava.py`)
+- `GET /strava/connect` - Redirects to Strava OAuth (requires login)
+- `GET /strava/callback` - Handles OAuth callback, stores token, triggers initial sync
+- `POST /strava/disconnect` - Removes Strava connection
+- `POST /strava/sync` - Manual sync trigger
+
+### Service (`webapp/services/strava.py`)
+- `get_authorization_url()` - Builds OAuth URL
+- `exchange_code_for_token(code)` - Exchanges auth code for tokens
+- `refresh_access_token(token)` - Refreshes expired token
+- `fetch_recent_activities(token, days)` - Fetches runs from Strava API
+- `sync_activities_to_db(activities)` - Imports to DB, skips duplicates
+- `sync_from_strava(days)` - Full sync orchestration
+
+### Potential Enhancements
+- Webhook support for automatic sync when activities added on Strava
+- Settings page to manage Strava connection
+- Periodic/scheduled sync (currently manual only)
+
 ## Deployment
 
 Hosted on PythonAnywhere. Uses PostgreSQL in production, SQLite locally.

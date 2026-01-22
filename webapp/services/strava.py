@@ -70,8 +70,10 @@ def get_valid_token():
 
 
 def fetch_recent_activities(token, days=30):
-    """Fetch running activities from the last N days."""
-    after = int((datetime.utcnow() - timedelta(days=days)).timestamp())
+    """Fetch running activities from January 21, 2026 onwards."""
+    # Fixed start date: January 21, 2026
+    start_date = datetime(2026, 1, 21)
+    after = int(start_date.timestamp())
 
     headers = {'Authorization': f'Bearer {token.access_token}'}
     activities = []
