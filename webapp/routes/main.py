@@ -66,9 +66,12 @@ def home():
     """Home page - weekly progress and recent runs."""
     # Auto-sync from Strava if connected and not synced recently
     from ..services.strava import auto_sync_if_needed
-    synced = auto_sync_if_needed(minutes=5)
-    if synced and synced > 0:
-        flash(f'Synced {synced} new runs from Strava.', 'success')
+    synced = auto_sync_if_needed(minutes=1)
+    if synced is not None:
+        if synced > 0:
+            flash(f'Synced {synced} new run{"s" if synced != 1 else ""} from Strava.', 'success')
+        else:
+            flash('Strava synced - no new runs.', 'info')
 
     today = date.today()
 
