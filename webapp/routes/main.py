@@ -61,14 +61,14 @@ def get_recent_runs(limit=3):
 
 
 @main_bp.route('/')
-@login_required
 def home():
     """Home page - weekly progress and recent runs."""
-    # Auto-sync from Strava if connected and not synced recently
-    from ..services.strava import auto_sync_if_needed
-    synced = auto_sync_if_needed(minutes=1)
-    if synced and synced > 0:
-        flash(f'Synced {synced} new run{"s" if synced != 1 else ""} from Strava.', 'success')
+    # Auto-sync from Strava if connected and not synced recently (only if logged in)
+    if is_authenticated():
+        from ..services.strava import auto_sync_if_needed
+        synced = auto_sync_if_needed(minutes=1)
+        if synced and synced > 0:
+            flash(f'Synced {synced} new run{"s" if synced != 1 else ""} from Strava.', 'success')
 
     today = date.today()
 
@@ -88,7 +88,8 @@ def home():
                            today_target=today_target,
                            today_distance=today_distance,
                            week_summary=week_summary,
-                           recent_runs=recent_runs)
+                           recent_runs=recent_runs,
+                           is_authenticated=is_authenticated())
 
 
 @main_bp.route('/plan')

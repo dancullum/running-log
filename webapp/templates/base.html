@@ -69,6 +69,10 @@
                 </a>
                 {% endif %}
             </div>
+            {% else %}
+            <a href="{{ url_for('auth.login') }}" class="bg-white/20 hover:bg-white/30 text-white text-xs px-3 py-1.5 rounded-lg font-medium">
+                Login
+            </a>
             {% endif %}
             {% endblock %}
         </div>
