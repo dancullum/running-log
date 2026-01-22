@@ -94,23 +94,65 @@ def home():
 @main_bp.route('/plan')
 @login_required
 def plan():
-    """Training plan page - shows schedule from yesterday onward."""
+    """Training plan page - shows this week's plan and future schedule."""
     today = date.today()
-    yesterday = today - timedelta(days=1)
+    monday = today - timedelta(days=today.weekday())
+    sunday = monday + timedelta(days=6)
 
-    # Get all planned days from yesterday onward
-    planned_days = TrainingPlan.query.filter(
-        TrainingPlan.date >= yesterday
+    # Get all runs and sum by date
+    all_runs = Run.query.all()
+    runs_by_date = {}
+    for r in all_runs:
+        if r.date in runs_by_date:
+            runs_by_date[r.date] += float(r.distance)
+        else:
+            runs_by_date[r.date] = float(r.distance)
+
+    # Get this week's plan (Monday to Sunday)
+    this_week_plans = TrainingPlan.query.filter(
+        TrainingPlan.date >= monday,
+        TrainingPlan.date <= sunday
     ).order_by(TrainingPlan.date).all()
 
-    # Get runs for these dates
-    dates = [p.date for p in planned_days]
-    runs = Run.query.filter(Run.date.in_(dates)).all()
-    runs_by_date = {r.date: float(r.distance) for r in runs}
+    this_week = []
+    week_target_total = 0
+    week_logged_total = 0
+    for plan_entry in this_week_plans:
+        is_today = plan_entry.date == today
+        is_past = plan_entry.date < today
+        logged = runs_by_date.get(plan_entry.date)
+        target = float(plan_entry.target_distance)
+        week_target_total += target
+        if logged:
+            week_logged_total += logged
+        this_week.append({
+            'id': plan_entry.id,
+            'date': plan_entry.date,
+            'target': target,
+            'logged': logged,
+            'is_today': is_today,
+            'is_past': is_past
+        })
+
+    # Get future planned days (after this week)
+    future_plans = TrainingPlan.query.filter(
+        TrainingPlan.date > sunday
+    ).order_by(TrainingPlan.date).all()
+
+    future_schedule = []
+    for plan_entry in future_plans:
+        logged = runs_by_date.get(plan_entry.date)
+        future_schedule.append({
+            'id': plan_entry.id,
+            'date': plan_entry.date,
+            'target': float(plan_entry.target_distance),
+            'logged': logged,
+            'is_today': False,
+            'is_past': False
+        })
 
     # Calculate total distance run so far
-    all_runs = Run.query.all()
-    total_run = sum(float(r.distance) for r in all_runs)
+    total_run = sum(runs_by_date.values())
 
     # Calculate total planned distance (entire plan)
     all_plans = TrainingPlan.query.all()
@@ -125,24 +167,14 @@ def plan():
         race_day = None
         days_remaining = 0
 
-    schedule = []
-    for plan_entry in planned_days:
-        is_today = plan_entry.date == today
-        is_past = plan_entry.date < today
-        logged = runs_by_date.get(plan_entry.date)
-
-        schedule.append({
-            'id': plan_entry.id,
-            'date': plan_entry.date,
-            'target': float(plan_entry.target_distance),
-            'logged': logged,
-            'is_today': is_today,
-            'is_past': is_past
-        })
-
     return render_template('plan.html',
                            today=today,
-                           schedule=schedule,
+                           monday=monday,
+                           sunday=sunday,
+                           this_week=this_week,
+                           week_target_total=week_target_total,
+                           week_logged_total=week_logged_total,
+                           future_schedule=future_schedule,
                            total_run=total_run,
                            total_planned=total_planned,
                            days_remaining=days_remaining,

@@ -28,21 +28,65 @@
     {% endif %}
 </div>
 
-<!-- Schedule List -->
-<div class="bg-white rounded-2xl shadow-md overflow-hidden">
+<!-- This Week Card -->
+{% if this_week %}
+<div class="bg-white rounded-2xl shadow-md p-5 mb-4">
+    <div class="flex justify-between items-center mb-3">
+        <h2 class="text-xs uppercase tracking-wide text-gray-500 font-medium">This Week</h2>
+        <span class="text-xs text-gray-500">{{ monday.strftime('%b %d') }} - {{ sunday.strftime('%b %d') }}</span>
+    </div>
+
+    <!-- Week Progress -->
+    <div class="flex items-center gap-2 mb-4">
+        <div class="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
+            <div class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-full rounded-full transition-all duration-500"
+                 style="width: {{ [(week_logged_total / week_target_total * 100) if week_target_total > 0 else 0, 100]|min }}%"></div>
+        </div>
+        <span class="text-sm font-medium text-gray-600">{{ week_logged_total|format_distance }}/{{ week_target_total|format_distance }} km</span>
+    </div>
+
+    <!-- Daily Breakdown -->
     <ul class="divide-y divide-gray-100">
-        {% for day in schedule %}
-        <li class="p-4 {% if day.is_today %}bg-gradient-to-r from-amber-50 to-yellow-50{% endif %}">
+        {% for day in this_week %}
+        <li class="py-2 flex justify-between items-center {% if day.is_today %}bg-gradient-to-r from-amber-50 to-yellow-50 -mx-5 px-5{% endif %}">
+            <div class="flex items-center gap-2">
+                <span class="text-sm font-medium text-gray-700 w-8">{{ day.date.strftime('%a') }}</span>
+                {% if day.is_today %}
+                <span class="bg-amber-400 text-amber-900 text-xs px-1.5 py-0.5 rounded font-semibold">Today</span>
+                {% endif %}
+            </div>
+            <div class="flex items-center gap-3">
+                {% if day.target == 0 %}
+                <span class="text-sm text-gray-400 italic">Rest</span>
+                {% else %}
+                <span class="text-sm text-gray-500">{{ day.target|format_distance }} km</span>
+                {% endif %}
+                {% if day.logged %}
+                <span class="text-sm font-semibold text-emerald-600 w-16 text-right">{{ day.logged|format_distance }} km</span>
+                {% elif day.is_past and day.target > 0 %}
+                <span class="text-sm text-red-400 w-16 text-right">missed</span>
+                {% elif day.target > 0 %}
+                <span class="text-sm text-gray-300 w-16 text-right">—</span>
+                {% else %}
+                <span class="w-16"></span>
+                {% endif %}
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<!-- Future Schedule -->
+{% if future_schedule %}
+<div class="bg-white rounded-2xl shadow-md overflow-hidden">
+    <h2 class="text-xs uppercase tracking-wide text-gray-500 font-medium p-5 pb-0">Upcoming</h2>
+    <ul class="divide-y divide-gray-100">
+        {% for day in future_schedule %}
+        <li class="p-4">
             <div class="flex justify-between items-center">
                 <div>
-                    <div class="flex items-center gap-2">
-                        <span class="font-medium text-gray-900">{{ day.date.strftime('%a, %b %d') }}</span>
-                        {% if day.is_today %}
-                        <span class="bg-amber-400 text-amber-900 text-xs px-2 py-0.5 rounded-full font-semibold uppercase">Today</span>
-                        {% elif day.is_past %}
-                        <span class="bg-gray-200 text-gray-600 text-xs px-2 py-0.5 rounded-full font-semibold uppercase">Past</span>
-                        {% endif %}
-                    </div>
+                    <div class="font-medium text-gray-900">{{ day.date.strftime('%a, %b %d') }}</div>
                     {% if day.target == 0 %}
                     <div class="text-sm text-gray-500 italic">Rest day</div>
                     {% else %}
@@ -51,36 +95,26 @@
                 </div>
                 <div class="flex items-center gap-3">
                     <div class="text-right">
-                        {% if day.logged %}
-                        <div class="text-lg font-semibold text-emerald-600">{{ day.logged|format_distance }} km</div>
-                        <div class="text-xs text-emerald-500">logged</div>
-                        {% elif day.is_today and day.target > 0 %}
-                        <a href="{{ url_for('runs.log') }}"
-                           class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition">
-                            Log
-                        </a>
-                        {% elif day.target > 0 %}
+                        {% if day.target > 0 %}
                         <div class="text-lg font-semibold text-gray-400">{{ day.target|format_distance }} km</div>
-                        <div class="text-xs text-gray-400">planned</div>
                         {% else %}
                         <div class="text-gray-400 text-sm">Rest</div>
                         {% endif %}
                     </div>
-                    {% if not day.is_past %}
                     <a href="{{ url_for('main.edit_plan', plan_id=day.id) }}" class="text-gray-400 hover:text-emerald-600 p-1">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                         </svg>
                     </a>
-                    {% endif %}
                 </div>
             </div>
         </li>
         {% endfor %}
     </ul>
 </div>
+{% endif %}
 
-{% if not schedule %}
+{% if not this_week and not future_schedule %}
 <div class="text-center py-12 text-gray-500">
     <p>No training plan loaded.</p>
 </div>
