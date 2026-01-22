@@ -79,9 +79,9 @@ def home():
     today_plan = TrainingPlan.query.filter_by(date=today).first()
     today_target = float(today_plan.target_distance) if today_plan else None
 
-    # Get today's logged run
-    today_run = Run.query.filter_by(date=today).first()
-    today_distance = float(today_run.distance) if today_run else None
+    # Get today's logged runs (sum if multiple)
+    today_runs = Run.query.filter_by(date=today).all()
+    today_distance = sum(float(r.distance) for r in today_runs) if today_runs else None
 
     week_summary = get_week_summary()
     recent_runs = get_recent_runs(3)
