@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from sqlalchemy import func
 
 from ..models import db, Run, TrainingPlan
-from .auth import login_required
+from .auth import login_required, is_authenticated
 
 main_bp = Blueprint('main', __name__)
 
@@ -92,7 +92,6 @@ def home():
 
 
 @main_bp.route('/plan')
-@login_required
 def plan():
     """Training plan page - shows this week's plan and future schedule."""
     today = date.today()
@@ -178,7 +177,8 @@ def plan():
                            total_run=total_run,
                            total_planned=total_planned,
                            days_remaining=days_remaining,
-                           race_day=race_day)
+                           race_day=race_day,
+                           is_authenticated=is_authenticated())
 
 
 @main_bp.route('/plan/<int:plan_id>/edit', methods=['GET', 'POST'])
