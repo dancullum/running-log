@@ -95,9 +95,14 @@ def dashboard():
 @dashboard_bp.route('/api/chart-data')
 def chart_data():
     """API endpoint for chart data - actual vs target over time."""
-    # Get all runs ordered by date
+    # Get all runs ordered by date, summing multiple runs per day
     runs = Run.query.order_by(Run.date).all()
-    runs_by_date = {r.date: float(r.distance) for r in runs}
+    runs_by_date = {}
+    for r in runs:
+        if r.date in runs_by_date:
+            runs_by_date[r.date] += float(r.distance)
+        else:
+            runs_by_date[r.date] = float(r.distance)
 
     # Get all training plan entries
     plans = TrainingPlan.query.order_by(TrainingPlan.date).all()
