@@ -81,13 +81,6 @@
             </div>
             <div class="flex items-center gap-3">
                 <span class="text-lg font-semibold text-emerald-600">{{ run.distance|format_distance }} km</span>
-                {% if run.diff is not none %}
-                    {% if run.diff >= 0 %}
-                        <span class="text-xs text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded">+{{ run.diff|format_distance }}</span>
-                    {% else %}
-                        <span class="text-xs text-red-600 bg-red-100 px-2 py-0.5 rounded">{{ run.diff|format_distance }}</span>
-                    {% endif %}
-                {% endif %}
                 {% if is_authenticated %}
                 <a href="{{ url_for('runs.edit_run', run_id=run.id) }}" class="text-gray-400 hover:text-emerald-600">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
